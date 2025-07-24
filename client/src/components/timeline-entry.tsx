@@ -9,10 +9,11 @@ interface TimelineEntryProps {
   index: number;
 }
 
-const getIconForTags = (tags: string[] = []) => {
-  if (tags.includes("founding")) return Star;
-  if (tags.includes("key-hire") || tags.includes("leadership")) return Users;
-  if (tags.includes("expansion") || tags.includes("permanent-location")) return Building;
+const getIconForTags = (tags: string[] | null = []) => {
+  const tagArray = tags || [];
+  if (tagArray.includes("founding")) return Star;
+  if (tagArray.includes("key-hire") || tagArray.includes("leadership")) return Users;
+  if (tagArray.includes("expansion") || tagArray.includes("permanent-location")) return Building;
   return Zap;
 };
 
@@ -26,7 +27,7 @@ const getColorForYear = (year: number) => {
 export default function TimelineEntryComponent({ entry, index }: TimelineEntryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isEven = index % 2 === 0;
-  const IconComponent = getIconForTags(entry.tags);
+  const IconComponent = getIconForTags(entry.tags || []);
   const gradientClass = getColorForYear(entry.year);
 
   return (

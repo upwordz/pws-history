@@ -144,7 +144,7 @@ export default function SubmitStory() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Your Connection to PWS</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select your connection..." />
@@ -173,7 +173,7 @@ export default function SubmitStory() {
                       <FormItem>
                         <FormLabel>Time Period</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., 1970s-1980s" {...field} />
+                          <Input placeholder="e.g., 1970s-1980s" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -187,7 +187,7 @@ export default function SubmitStory() {
                       <FormItem>
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input type="tel" {...field} />
+                          <Input type="tel" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

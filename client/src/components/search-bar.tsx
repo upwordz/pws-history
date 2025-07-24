@@ -1,22 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
+import type { TimelineEntry, StorySubmission } from "@shared/schema";
 
 export default function SearchBar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
   // Debounce search query
-  useState(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
     }, 300);
 
     return () => clearTimeout(timer);
-  });
+  }, [searchQuery]);
 
-  const { data: searchResults, isLoading } = useQuery({
+  const { data: searchResults, isLoading } = useQuery<{
+    timelineEntries: TimelineEntry[];
+    storySubmissions: StorySubmission[];
+  }>({
     queryKey: ["/api/search", { q: debouncedQuery }],
     enabled: debouncedQuery.length > 2,
     staleTime: 300000, // 5 minutes
