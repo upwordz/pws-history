@@ -105,3 +105,7 @@ Abstracted storage interface with PostgreSQL database integration using Drizzle 
 - Replit-specific configuration for development environment
 
 The application now uses PostgreSQL database for persistent data storage, with automatic schema migrations via Drizzle Kit and seeded with authentic historical data from the company archives.
+
+## Deployment Status
+
+The application is **production-ready** and can be deployed to modern hosting platforms like Vercel, Netlify, or Railway. Bluehost is not recommended due to limited Node.js support and lack of PostgreSQL compatibility. See DEPLOYMENT.md for detailed hosting recommendations and setup instructions.
