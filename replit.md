@@ -54,7 +54,7 @@ Three main entities:
 - `GET /api/videos` - Get video gallery content
 
 ### Storage Layer
-Abstracted storage interface with in-memory implementation for development, designed to easily swap to PostgreSQL database in production.
+Abstracted storage interface with PostgreSQL database integration using Drizzle ORM. The application automatically uses PostgreSQL when DATABASE_URL is available, falling back to in-memory storage for development.
 
 ## Data Flow
 
@@ -92,7 +92,7 @@ Abstracted storage interface with in-memory implementation for development, desi
 ### Development
 - **Frontend**: Vite dev server with HMR
 - **Backend**: TSX for TypeScript execution
-- **Database**: In-memory storage with sample data
+- **Database**: PostgreSQL via DATABASE_URL with Drizzle ORM
 
 ### Production Build
 - **Frontend**: Static assets built with Vite to `dist/public`
@@ -104,4 +104,4 @@ Abstracted storage interface with in-memory implementation for development, desi
 - `DATABASE_URL`: PostgreSQL connection string (required for production)
 - Replit-specific configuration for development environment
 
-The application is designed to run seamlessly in both development (with in-memory data) and production (with PostgreSQL) environments, making it easy to develop and deploy.
+The application now uses PostgreSQL database for persistent data storage, with automatic schema migrations via Drizzle Kit and seeded with authentic historical data from the company archives.

@@ -1,4 +1,6 @@
 import { timelineEntries, storySubmissions, videos, type TimelineEntry, type InsertTimelineEntry, type StorySubmission, type InsertStorySubmission, type Video, type InsertVideo } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Timeline entries
@@ -319,4 +321,124 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getTimelineEntries(): Promise<TimelineEntry[]> {
+    const entries = await db.select().from(timelineEntries).orderBy(timelineEntries.year);
+    return entries;
+  }
+
+  async getTimelineEntry(id: number): Promise<TimelineEntry | undefined> {
+    const [entry] = await db.select().from(timelineEntries).where(eq(timelineEntries.id, id));
+    return entry || undefined;
+  }
+
+  async createTimelineEntry(insertEntry: InsertTimelineEntry): Promise<TimelineEntry> {
+    const [entry] = await db
+      .insert(timelineEntries)
+      .values({
+        ...insertEntry,
+        details: insertEntry.details ?? null,
+        tags: insertEntry.tags ?? null,
+        featured: insertEntry.featured ?? null,
+      })
+      .returning();
+    return entry;
+  }
+
+  async getStorySubmissions(): Promise<StorySubmission[]> {
+    const submissions = await db.select().from(storySubmissions).orderBy(storySubmissions.submittedAt);
+    return submissions;
+  }
+
+  async getStorySubmission(id: number): Promise<StorySubmission | undefined> {
+    const [submission] = await db.select().from(storySubmissions).where(eq(storySubmissions.id, id));
+    return submission || undefined;
+  }
+
+  async createStorySubmission(insertSubmission: InsertStorySubmission): Promise<StorySubmission> {
+    const [submission] = await db
+      .insert(storySubmissions)
+      .values({
+        ...insertSubmission,
+        connection: insertSubmission.connection ?? null,
+        timePeriod: insertSubmission.timePeriod ?? null,
+        phone: insertSubmission.phone ?? null,
+        photoUrls: insertSubmission.photoUrls ?? null,
+        status: "pending",
+      })
+      .returning();
+    return submission;
+  }
+
+  async updateStorySubmissionStatus(id: number, status: string): Promise<StorySubmission | undefined> {
+    const [submission] = await db
+      .update(storySubmissions)
+      .set({ status })
+      .where(eq(storySubmissions.id, id))
+      .returning();
+    return submission || undefined;
+  }
+
+  async getVideos(): Promise<Video[]> {
+    const videoList = await db.select().from(videos);
+    return videoList;
+  }
+
+  async getVideo(id: number): Promise<Video | undefined> {
+    const [video] = await db.select().from(videos).where(eq(videos.id, id));
+    return video || undefined;
+  }
+
+  async createVideo(insertVideo: InsertVideo): Promise<Video> {
+    const [video] = await db
+      .insert(videos)
+      .values({
+        ...insertVideo,
+        youtubeId: insertVideo.youtubeId ?? null,
+        thumbnailUrl: insertVideo.thumbnailUrl ?? null,
+        duration: insertVideo.duration ?? null,
+        era: insertVideo.era ?? null,
+        category: insertVideo.category ?? null,
+        featured: insertVideo.featured ?? null,
+      })
+      .returning();
+    return video;
+  }
+
+  async searchContent(query: string): Promise<{
+    timelineEntries: TimelineEntry[];
+    storySubmissions: StorySubmission[];
+  }> {
+    const lowerQuery = `%${query.toLowerCase()}%`;
+    
+    // Search timeline entries using ilike for case-insensitive search
+    const timelineResults = await db
+      .select()
+      .from(timelineEntries)
+      .where(
+        db.sql`LOWER(${timelineEntries.title}) LIKE ${lowerQuery}
+        OR LOWER(${timelineEntries.description}) LIKE ${lowerQuery}
+        OR LOWER(${timelineEntries.details}) LIKE ${lowerQuery}`
+      );
+
+    // Search story submissions using ilike for case-insensitive search
+    const storyResults = await db
+      .select()
+      .from(storySubmissions)
+      .where(
+        db.sql`LOWER(${storySubmissions.storyTitle}) LIKE ${lowerQuery}
+        OR LOWER(${storySubmissions.storyContent}) LIKE ${lowerQuery}
+        OR LOWER(${storySubmissions.name}) LIKE ${lowerQuery}`
+      );
+
+    return { 
+      timelineEntries: timelineResults, 
+      storySubmissions: storyResults 
+    };
+  }
+}
+
+// Use DatabaseStorage when DATABASE_URL is available
+export const storage = process.env.DATABASE_URL 
+  ? new DatabaseStorage() 
+  : new MemStorage();
